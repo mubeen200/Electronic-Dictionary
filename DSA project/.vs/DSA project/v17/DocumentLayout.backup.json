@@ -1,9 +1,9 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\3TEE\\source\\repos\\DSA project\\",
+  "WorkspaceRootPath": "D:\\Abbas\\Uni\\sem3\\elecDict\\Electronic-Dictionary\\DSA project\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{1DFCF6B2-2E4C-464F-9F87-2D8EDF02C695}|DSA project.vcxproj|C:\\Users\\3TEE\\source\\repos\\DSA project\\FileName.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "AbsoluteMoniker": "D:0:0:{1DFCF6B2-2E4C-464F-9F87-2D8EDF02C695}|DSA project.vcxproj|D:\\Abbas\\Uni\\sem3\\elecDict\\Electronic-Dictionary\\DSA project\\FileName.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
       "RelativeMoniker": "D:0:0:{1DFCF6B2-2E4C-464F-9F87-2D8EDF02C695}|DSA project.vcxproj|solutionrelative:FileName.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
     }
   ],
@@ -20,11 +20,11 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "FileName.cpp",
-              "DocumentMoniker": "C:\\Users\\3TEE\\source\\repos\\DSA project\\FileName.cpp",
+              "DocumentMoniker": "D:\\Abbas\\Uni\\sem3\\elecDict\\Electronic-Dictionary\\DSA project\\FileName.cpp",
               "RelativeDocumentMoniker": "FileName.cpp",
-              "ToolTip": "C:\\Users\\3TEE\\source\\repos\\DSA project\\FileName.cpp",
-              "RelativeToolTip": "FileName.cpp",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAASAAAAAAAAAA==",
+              "ToolTip": "D:\\Abbas\\Uni\\sem3\\elecDict\\Electronic-Dictionary\\DSA project\\FileName.cpp*",
+              "RelativeToolTip": "FileName.cpp*",
+              "ViewState": "AgIAANcAAAAAAAAAAAAIwOoAAAANAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
               "WhenOpened": "2025-04-26T04:10:06.026Z",
               "EditorCaption": ""

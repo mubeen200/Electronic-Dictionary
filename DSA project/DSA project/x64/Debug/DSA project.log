@@ -1,3 +1,2 @@
 ﻿  FileName.cpp
-C:\Users\3TEE\source\repos\DSA project\FileName.cpp(43,6): warning C4326: return type of 'main' should be 'int' instead of 'void'
-  DSA project.vcxproj -> C:\Users\3TEE\source\repos\DSA project\x64\Debug\DSA project.exe
+  DSA project.vcxproj -> D:\Abbas\Uni\sem3\elecDict\Electronic-Dictionary\DSA project\x64\Debug\DSA project.exe
