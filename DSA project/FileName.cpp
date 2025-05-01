@@ -27,6 +27,51 @@ struct Node {
     }
 };
 
+struct history {
+    string word;
+    string category;
+    history* next;
+    history(string word, string category): word(word), category(category), next(nullptr) {}
+};
+history* head = nullptr;
+
+void insertInHistory(string word, string category) {
+    history* nn = new history(word, category);
+    if (!head) {
+        head = nn;
+        return;
+    }
+    nn->next = head;
+    head = nn;
+    return;
+}
+
+void deleteInHistory() {
+    if (!head) {
+        return;
+    }
+    history* temp1 = head;
+    head = head->next;
+    delete temp1;
+    return;
+}
+
+void printHistory() {
+    history* temp = head;
+    while (temp != NULL) {
+        cout << temp->word<< " "<< temp->category << endl;
+        temp = temp->next;
+    }
+    return;
+}
+
+string trim(const string& s) {
+    size_t start = s.find_first_not_of(" \t\r\n");
+    size_t end = s.find_last_not_of(" \t\r\n");
+    return (start == string::npos || end == string::npos) ? "" : s.substr(start, end - start + 1);
+}
+
+
 int heightOf(Node* n) { return n ? n->height : 0; }
 int balanceOf(Node* n) { return n ? heightOf(n->left) - heightOf(n->right) : 0; }
 
@@ -101,6 +146,7 @@ vector<map<string, string>> parseBlocks(const string& fname, const vector<string
     map<string, string> cur;
     string line;
     while (getline(in, line)) {
+        line = trim(line);
         if (line.empty()) {
             if (!cur.empty()) {
                 blocks.push_back(cur);
@@ -109,8 +155,9 @@ vector<map<string, string>> parseBlocks(const string& fname, const vector<string
             continue;
         }
         for (auto& f : fieldNames) {
-            if (line.rfind(f, 0) == 0) {           // starts_with
-                cur[f] = line.substr(f.size());
+            if (line.rfind(f, 0) == 0) {
+                string value = line.substr(f.size());
+                cur[f] = trim(value);
                 break;
             }
         }
@@ -149,6 +196,7 @@ int main() {
             p = L.substr(po + 1, pc - po - 1),
             m = L.substr(co + 2);
         if (!M.count(w)) M[w] = new Node(w);
+       
         M[w]->addEntry(p, m);
     }
 
@@ -163,10 +211,15 @@ int main() {
         Node* n = it->second;
         size_t idx;
         auto posIt = n->pos_index.find(p);
-        if (posIt == n->pos_index.end()) idx = n->addEntry(p, "");
-        else idx = posIt->second;
+        if (posIt == n->pos_index.end()) {
+            idx = n->addEntry(p, "");
+        }
+        else {
+            idx = posIt->second;
+        }
         n->synonym[idx] = split(list, ';');
     }
+    
 
     // 3) parse antonyms.txt (blocks with Word:, POS:, Antonyms:)
     auto antBlocks = parseBlocks("antonym.txt",
@@ -214,6 +267,7 @@ int main() {
     case 1:
         cout << "Enter the word: ";
         getline(cin, w);
+        insertInHistory(w, "meaning");
         n = search(w, root);
        
         for (int i = 0; i < n->pos.size();i++) {
@@ -225,6 +279,7 @@ int main() {
     case 2:
         cout << "Enter the word: ";
         getline(cin, w);
+        insertInHistory(w, "synonym");
          n = search(w, root);
 
         for (int i = 0; i < n->pos.size();i++) {
@@ -242,6 +297,7 @@ int main() {
     case 5:
         break;
     case 6:
+        printHistory();
         break;
     case 7:
         go = false;
