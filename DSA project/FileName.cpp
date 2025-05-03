@@ -4,7 +4,9 @@
 #include <string>
 #include <vector>
 #include <map>
-#include<unordered_map>
+#include <unordered_map>
+#include<random>
+#include <stdexcept>
 
 using namespace std;
 
@@ -13,7 +15,9 @@ struct Node {
     vector<string> pos, meaning;
     vector<vector<string>> synonym, antonym;
     unordered_map<string, size_t> pos_index;
-    Node* left = nullptr;  Node* right = nullptr;  int height = 1;
+    Node* left = nullptr;
+    Node* right = nullptr;
+    int height = 1;
 
     Node(const string& w) : word(w) {}
     size_t addEntry(const string& p, const string& m) {
@@ -28,63 +32,40 @@ struct Node {
 };
 
 struct history {
-    string word;
-    string category;
+    string word, category;
     history* next;
-    history(string word, string category): word(word), category(category), next(nullptr) {}
+    history(string w, string c) : word(w), category(c), next(nullptr) {}
 };
 history* head = nullptr;
-
-void insertInHistory(string word, string category) {
-    history* nn = new history(word, category);
-    if (!head) {
-        head = nn;
-        return;
-    }
+void insertInHistory(const string& w, const string& c) {
+    history* nn = new history(w, c);
     nn->next = head;
     head = nn;
-    return;
 }
-
-void deleteInHistory() {
-    if (!head) {
-        return;
-    }
-    history* temp1 = head;
-    head = head->next;
-    delete temp1;
-    return;
-}
-
 void printHistory() {
-    history* temp = head;
-    while (temp != NULL) {
-        cout << temp->word<< " "<< temp->category << endl;
-        temp = temp->next;
-    }
-    return;
+    for (history* t = head; t; t = t->next)
+        cout << t->word << " (" << t->category << ")\n";
 }
 
 string trim(const string& s) {
-    size_t start = s.find_first_not_of(" \t\r\n");
-    size_t end = s.find_last_not_of(" \t\r\n");
-    return (start == string::npos || end == string::npos) ? "" : s.substr(start, end - start + 1);
+    size_t b = s.find_first_not_of(" \t\r\n");
+    size_t e = s.find_last_not_of(" \t\r\n");
+    return (b == string::npos ? "" : s.substr(b, e - b + 1));
 }
-
 
 int heightOf(Node* n) { return n ? n->height : 0; }
 int balanceOf(Node* n) { return n ? heightOf(n->left) - heightOf(n->right) : 0; }
 
 Node* rightRotate(Node* y) {
-    Node* x = y->left;  Node* T2 = x->right;
-    x->right = y;  y->left = T2;
+    Node* x = y->left; Node* T2 = x->right;
+    x->right = y; y->left = T2;
     y->height = max(heightOf(y->left), heightOf(y->right)) + 1;
     x->height = max(heightOf(x->left), heightOf(x->right)) + 1;
     return x;
 }
 Node* leftRotate(Node* x) {
-    Node* y = x->right;  Node* T2 = y->left;
-    y->left = x;  x->right = T2;
+    Node* y = x->right; Node* T2 = y->left;
+    y->left = x; x->right = T2;
     x->height = max(heightOf(x->left), heightOf(x->right)) + 1;
     y->height = max(heightOf(y->left), heightOf(y->right)) + 1;
     return y;
@@ -95,14 +76,10 @@ Node* insertAVL(Node* root, Node* node) {
     if (node->word < root->word) root->left = insertAVL(root->left, node);
     else if (node->word > root->word) root->right = insertAVL(root->right, node);
     else return root;
-
     root->height = 1 + max(heightOf(root->left), heightOf(root->right));
-
     int bf = balanceOf(root);
     if (bf > 1 && node->word < root->left->word) return rightRotate(root);
-
-    if (bf<-1 && node->word>root->right->word) return leftRotate(root);
-
+    if (bf < -1 && node->word > root->right->word) return leftRotate(root);
     if (bf > 1 && node->word > root->left->word) {
         root->left = leftRotate(root->left);
         return rightRotate(root);
@@ -114,32 +91,13 @@ Node* insertAVL(Node* root, Node* node) {
     return root;
 }
 
-void printInOrder(Node* r) {
-    if (!r) return;
-    printInOrder(r->left);
-    cout << "Word: " << r->word << "\n";
-    for (size_t i = 0;i < r->pos.size();i++) {
-        cout << "  POS: " << r->pos[i] << "\n"
-            << "  Meaning: " << r->meaning[i] << "\n"
-            << "  Syn: ";
-        for (auto& s : r->synonym[i]) cout << s << "; ";
-        cout << "\n  Ant: ";
-        for (auto& a : r->antonym[i]) cout << a << "; ";
-        cout << "\n\n";
-    }
-    printInOrder(r->right);
-}
-
-// split on delimiter
 vector<string> split(const string& s, char d) {
     vector<string> out; string t;
     istringstream ss(s);
-    while (getline(ss, t, d)) if (!t.empty()) out.push_back(t);
+    while (getline(ss, t, d)) if (!t.empty()) out.push_back(trim(t));
     return out;
 }
 
-// parse a “block” file like parsed_output.txt
-// fieldNames e.g. {"Word:","POS:","Meaning:","Synonyms:"}
 vector<map<string, string>> parseBlocks(const string& fname, const vector<string>& fieldNames) {
     ifstream in(fname);
     vector<map<string, string>> blocks;
@@ -148,16 +106,12 @@ vector<map<string, string>> parseBlocks(const string& fname, const vector<string
     while (getline(in, line)) {
         line = trim(line);
         if (line.empty()) {
-            if (!cur.empty()) {
-                blocks.push_back(cur);
-                cur.clear();
-            }
+            if (!cur.empty()) { blocks.push_back(cur); cur.clear(); }
             continue;
         }
         for (auto& f : fieldNames) {
             if (line.rfind(f, 0) == 0) {
-                string value = line.substr(f.size());
-                cur[f] = trim(value);
+                cur[f] = trim(line.substr(f.size()));
                 break;
             }
         }
@@ -166,145 +120,119 @@ vector<map<string, string>> parseBlocks(const string& fname, const vector<string
     return blocks;
 }
 
-Node* search(string word, 
-   /* map<string, Node*> M*/
-    Node* root
-) {
-    /*Node* temp = M[word];
-    return temp->meaning;*/
-    vector<string> t;
+Node* searchNode(const string& w, Node* root) {
     if (!root) return nullptr;
-    if (word < root->word) {
-        return search(word, root->left);
-    }
-    else if (word > root->word) {
-        return search(word, root->right);
-    }
+    if (w < root->word) return searchNode(w, root->left);
+    if (w > root->word) return searchNode(w, root->right);
     return root;
 }
 
 int main() {
     map<string, Node*> M;
-
-    // 1) parse meanings.txt (format: word (POS): meaning)
-    ifstream meanF("merged_dictionary.txt");
+    // 1) meanings
+    ifstream mf("merged_dictionary.txt");
     string L;
-    while (getline(meanF, L)) {
+    while (getline(mf, L)) {
         size_t po = L.find('('), pc = L.find(')'), co = L.find(':');
         if (po == string::npos || pc == string::npos || co == string::npos) continue;
-        string w = L.substr(0, po - 1),
-            p = L.substr(po + 1, pc - po - 1),
-            m = L.substr(co + 2);
+        string w = L.substr(0, po - 1), p = L.substr(po + 1, pc - po - 1), m = L.substr(co + 2);
         if (!M.count(w)) M[w] = new Node(w);
-       
         M[w]->addEntry(p, m);
     }
-
-    // 2) parse synonyms.txt (blocks with Word:, POS:, Synonyms:)
-    auto synBlocks = parseBlocks("synonym.txt",
-        { "Word:","POS:","Synonyms:" });
-    for (auto& blk : synBlocks) {
-        string w = blk["Word:"], p = blk["POS:"];
-        string list = blk["Synonyms:"];
-        auto it = M.find(w);
-        if (it == M.end()) continue;
+    // 2) synonyms
+    auto synB = parseBlocks("synonym.txt", { "Word:","POS:","Synonyms:" });
+    for (auto& blk : synB) {
+        string w = blk["Word:"], p = blk["POS:"], list = blk["Synonyms:"];
+        auto it = M.find(w); if (it == M.end()) continue;
         Node* n = it->second;
         size_t idx;
-        auto posIt = n->pos_index.find(p);
-        if (posIt == n->pos_index.end()) {
-            idx = n->addEntry(p, "");
-        }
-        else {
-            idx = posIt->second;
-        }
+        auto pi = n->pos_index.find(p);
+        if (pi == n->pos_index.end()) idx = n->addEntry(p, "");
+        else idx = pi->second;
         n->synonym[idx] = split(list, ';');
     }
-    
-
-    // 3) parse antonyms.txt (blocks with Word:, POS:, Antonyms:)
-    auto antBlocks = parseBlocks("antonym.txt",
-        { "Word:","POS:","Antonyms:" });
-    for (auto& blk : antBlocks) {
-        string w = blk["Word:"], p = blk["POS:"];
-        string list = blk["Antonyms:"];
-        auto it = M.find(w);
-        if (it == M.end()) continue;
+    // 3) antonyms
+    auto antB = parseBlocks("antonym.txt", { "Word:","POS:","Antonyms:" });
+    for (auto& blk : antB) {
+        string w = blk["Word:"], p = blk["POS:"], list = blk["Antonyms:"];
+        auto it = M.find(w); if (it == M.end()) continue;
         Node* n = it->second;
         size_t idx;
-        auto posIt = n->pos_index.find(p);
-        if (posIt == n->pos_index.end()) idx = n->addEntry(p, "");
-        else idx = posIt->second;
+        auto pi = n->pos_index.find(p);
+        if (pi == n->pos_index.end()) idx = n->addEntry(p, "");
+        else idx = pi->second;
         n->antonym[idx] = split(list, ';');
     }
-
-    // 4) build AVL
+    // build AVL
+    vector<Node*> Allwords;
     Node* root = nullptr;
-    for (auto& kv : M) root = insertAVL(root, kv.second);
+    for (auto& kv : M) {
+        root = insertAVL(root, kv.second);
+        Allwords.push_back(kv.second);
+    }
 
-    // 5) print
-    //printInOrder(root);
+    srand(time(0));
+    int randomNum = rand() % Allwords.size();
+    Node* numd = Allwords[randomNum];
 
-    int choice;
-    cout << "-------------Welcome To Electronic Dictionary-------------" << endl << endl;
-    bool go = true;
-    while (go){
-        cout << "  ENTER YOUR CHOICE   " << endl << endl;
-    cout << "1.Meaning of the Word" << endl;
-    cout << "2.Synonym of the Word" << endl;
-    cout << "3.Part of the Speech" << endl;
-    cout << "4.Example Sentence" << endl;
-    cout << "5.Word of the Day" << endl;
-    cout << "6.Search history of the words" << endl;
-    cout << "7. Exit" << endl;
-    cin >> choice;
-    cin.ignore();
-    string w;
-    Node* n;
-    //string meaning;
-
-    switch (choice)
-    {
-    case 1:
-        cout << "Enter the word: ";
-        getline(cin, w);
-        insertInHistory(w, "meaning");
-        n = search(w, root);
-       
-        for (int i = 0; i < n->pos.size();i++) {
-            cout << w << "(" << n->pos[i] << ") : " << n->meaning[i] << endl;
-        }
-        break;
-    
-
-    case 2:
-        cout << "Enter the word: ";
-        getline(cin, w);
-        insertInHistory(w, "synonym");
-         n = search(w, root);
-
-        for (int i = 0; i < n->pos.size();i++) {
-            for (int j = 0; j < n->synonym.size();j++) {
-                for (auto a : n->synonym[j]) {
-                    cout << a << " " << endl;
+    int choice; string w; Node* n;
+    cout << "--- Electronic Dictionary ---\n\n";
+    cout <<"Word of the Day: " << numd->word<< endl;
+    while (true) {
+        cout << "\n1. Meaning\n2. Synonyms\n3. Antonyms\n4. History\n5. Exit\nChoice: ";
+        cin >> choice; cin.ignore();
+        if (choice == 5) break;
+        try {
+            switch (choice) {
+            case 1:
+                cout << "Enter word: "; getline(cin, w);
+                insertInHistory(w, "meaning");
+                n = searchNode(w, root);
+                if (!n) throw runtime_error("Word not found.");
+                for (size_t i = 0;i < n->pos.size();i++)
+                    cout << w << " (" << n->pos[i] << "): " << n->meaning[i] << "\n";
+                break;
+            case 2:
+                cout << "Enter word: "; getline(cin, w);
+                insertInHistory(w, "synonym");
+                n = searchNode(w, root);
+                if (!n) throw runtime_error("Word not found.");
+                for (size_t i = 0;i < n->pos.size();i++) {
+                    for (auto& a : n->synonym[i]) {
+                        if (a == "") {
+                            continue;
+                        }
+                        cout << w << " (" << n->pos[i] << "): " << a << " " << endl;
+                    }
                 }
+                break;
+            case 3:
+                cout << "Enter word: "; getline(cin, w);
+                insertInHistory(w, "antonym");
+                n = searchNode(w, root);
+                if (!n) throw runtime_error("Word not found.");
+                for (size_t i = 0;i < n->pos.size();i++) {
+                    for (auto& a: n->antonym[i]) {
+                        if (a == "") {
+                            continue;
+                        }
+                        cout << w << " (" << n->pos[i] << "): " << a << " " << endl;
+                    }
+                }
+                break;
+            case 4:
+                printHistory();
+                break;
+            default:
+                 randomNum = rand() % Allwords.size();
+                 numd = Allwords[randomNum];
+                cout << "Word of the Day: " << numd->word << endl;
+                //cout << "Invalid choice." << "\n";
             }
         }
-        break;
-    case 3:
-        break;
-    case 4:
-        break;
-    case 5:
-        break;
-    case 6:
-        printHistory();
-        break;
-    case 7:
-        go = false;
-        break;
-    default:
-        cout << "Wrong Choice!";
-        break;
+        catch (const exception& e) {
+            cerr << "Error: " << e.what() << "\n";
+        }
     }
-}
+    return 0;
 }
