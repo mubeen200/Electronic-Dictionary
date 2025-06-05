@@ -1,3 +1,0 @@
-﻿  FileName.cpp
-G:\Programming Projects\Electronic-Dictionary\DSA project\FileName.cpp(216,15): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
-  DSA project.vcxproj -> G:\Programming Projects\Electronic-Dictionary\DSA project\x64\Debug\DSA project.exe
