@@ -157,10 +157,10 @@ apple (n)
 
 ## Author
 
-**Mubeen Haider** — github: https://github.com/mubeen200
+**Ashar Ali** ([Github Profile](https://github.com/AsharAli-042))
 
-**Ashar Ali** — github: https://github.com/AsharAli-042
+**Abbas Fakhruddin** ([Github Profile](https://github.com/Abbas-coding))
 
-**Abbas Fakhruddin** — github: https://github.com/Abbas-coding
+**Rahoul Kumar** ([Github Profile](https://github.com/CodeWithRahoul))
 
-**Rahoul Kumar** — github: https://github.com/CodeWithRahoul
+**Mubeen Haider** ([Github Profile](https://github.com/mubeen200))
